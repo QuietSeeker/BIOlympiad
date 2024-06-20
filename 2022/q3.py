@@ -63,6 +63,9 @@ print(solve(order,arrangement))
 #     prev = x
 #     seen.add(x)
 
+# 3 (b)
+# Simple simulation. 
+
 # 3 (c)
 # If there are only two possible preference lists then given such arrangement one car has two possible
 # preferences, and all the rest parked in their preffered spots.
@@ -80,48 +83,26 @@ print(solve(order,arrangement))
 # The total number of arrangements is 0 + 1 + ... + 15 = 120
 
 # 3 (d)
-# We modify the counting function
-def waysD(order,currPrefs): # nmber of pref lists that start with these one and get to the order
-    if len(set(currPrefs.values())) != len(currPrefs.keys()):
-        return 0
 
-    allCars = sorted(order)
-    theseCars = set(currPrefs.keys())
-    otherCars = set(allCars) - set(currPrefs.keys())
+# Note that car 'a' is always in its preferred position
+# Note a car's preffered position is always <= (left of or exactly) its final position.
+# Therefore, if a car is not in its preffered position then it's preffered position is < (left of) its final position
+# We use this information, and the fundemental counting principle, to count the total number of possible pref lists.
 
-    # check currPrefList
-    for workingCar in theseCars:
-        finalSpot = order.index(workingCar)
-        preferredSpot = ord(currPrefs[workingCar])-65
 
-        if finalSpot != preferredSpot:
-            return 0
-
-    prod = 1
-
-    for workingCar in otherCars:
-        finalSpot = order.index(workingCar)
-        firstAvailable = finalSpot
-        while firstAvailable >= 1:
-            if order[firstAvailable-1] > workingCar: # the previous spot was empty
-                break
-            firstAvailable -= 1
-        opts = finalSpot - firstAvailable # we cant include the one it parked at as an option due to the new constraints
-        prod *= opts
-    
-    return prod
-
-from itertools import combinations,product
+from itertools import combinations
 CARS = "abcdefghijklmnop"
-PREFS = "ABCDEFGHIJKLMNOP"
-rightPlaces = [('a',) + cs for cs in combinations(CARS[1:],2)] # 'a' is always in its prefered spot
-t = list(product(PREFS,repeat=3))
+
+possHappyCars = [('a',) + cs for cs in combinations(CARS[1:],2)] 
 
 s = 0
-for cars in rightPlaces:
-    for v in t:
-        check = dict(zip(cars,v))
-        s += waysD(CARS,check)
+for happyCars in possHappyCars:
+    otherCars = set(CARS) - set(happyCars)
+    p = 1
+    for sadCar in otherCars:
+        p *= ord(sadCar) - ord('a')
+    s += p
+
 print(f"{s:,}")
 
 # This computation gives us the answer 6,165,817,614,720
